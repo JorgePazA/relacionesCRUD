@@ -52,21 +52,56 @@ const moviesController = {
     },
     //Aqui dispongo las rutas para trabajar con el CRUD
     add: function (req, res) {
-        
+        Genres.findAll()
+            .then(genre => res.render('moviesAdd', {allGenres: genre}))  
     },
     create: function (req,res) {
-
+        Movies.create({
+            title: req.body.title,
+            rating: req.body.rating,
+            awards: req.body.awards,
+            release_date: req.body.release_date,
+            length: req.body.length,
+            genre_id: req.body.genre_id
+        })
+        res.redirect('/movies')
     },
     edit: function(req,res) {
+        let movieP = Movies.findByPk(req.params.id, {
+            include: ["genres"]
+        })
+        let genreP = Genres.findAll()
 
+        Promise.all([movieP, genreP])
+            .then(function(arr) {
+                let movie = arr[0]
+                let genres = arr[1]
+                res.render('moviesEdit', {Movie: movie, allGenres: genres})})
+            .catch(err => err)        
     },
     update: function (req,res) {
-
+        Movies.update({
+            title: req.body.title,
+            rating: req.body.rating,
+            awards: req.body.awards,
+            release_date: req.body.release_date,
+            length: req.body.length,
+            genre_id: req.body.genre_id
+        },
+        {
+            where: {id: req.params.id}
+        })
+        res.redirect('/movies')    
     },
     delete: function (req,res) {
-
+        Movies.findByPk(req.params.id)
+        .then(movie => res.render('moviesDelete', {Movie: movie})) 
     },
     destroy: function (req,res) {
+        Movies.destroy({
+            where: {id: req.params.id}
+        })
+        res.redirect('/movies')
 
     }
 }
